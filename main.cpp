@@ -398,7 +398,7 @@ int assembly(string payloadFile, string mutatorFile, string targetArch, string f
 	cout << "Filename: " << fileName << endl;
 	cout << "Payload: " << payloadFile << endl;
 	cout << "Mutator: " << mutatorFile << endl;
-	cout << "Filesize: " << tempBinary.size() << endl;
+	cout << "Filesize: " << tempBinary.size()/2 << endl;
 	cout << "--------------------" << endl << endl;
 	return 0;
 }
