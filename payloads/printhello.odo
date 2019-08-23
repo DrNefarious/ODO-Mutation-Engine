@@ -1,0 +1,14 @@
+<odo>
+	<name>printhello</name>
+	<description>Prints Hello World! to the screen.</description>
+	<code>B804000000BB01000000B917204000BA0D000000CD80C348656C6C6F20576F726C64210A</code>
+	<disassemble>
+		mov eax, 4					; B804000000
+		mov ebx, 1					; BB01000000
+		mov ecx, payload+17			; B917204000
+		mov edx, 13					; BA06000000
+		int 80h						; CD80
+		ret							; C3
+		Hello World!, 00Ah			; 48656C6C6F20576F726C64210A			
+	</disassemble>
+</odo>
