@@ -1,1 +1,0 @@
-g++ main.cpp -o odo -std=c++17 -lstdc++fs -O3
